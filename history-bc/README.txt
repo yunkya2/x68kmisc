@@ -36,5 +36,5 @@ bash ライク (Emacs ライク) にしてあります。
   * 二度 TAB を押すと:
     * 補完可能なファイルが複数ある場合、そのファイル名一覧を表示
 
-URL: https://github.com/yunkya2/yunkya2/history-bc
+URL: https://github.com/yunkya2/yunkya2/tree/main/history-bc
 Yuichi Nakamura (GitHub: @yunkya2)
