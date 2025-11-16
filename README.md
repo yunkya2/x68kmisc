@@ -9,6 +9,7 @@
 [history-bc](history-bc/)|HISTORY.Xのキーバインドをbashっぽく改造
 [xdftool](xdftool/)      |XDFフォーマットのディスクイメージを作成・展開
 [drvinfo](drvinfo/)      |Human68kのドライブの内部情報を表示
+[iobuf](iobuf/)          |Human68kのI/Oバッファの情報を表示
 [stackfree](stackfree/)  |Human68k スーパバイザスタック消費量の表示
 [usefile](usefile/)      |指定したファイルをオープンしたままにする
 
