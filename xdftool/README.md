@@ -1,8 +1,8 @@
-# XDF ファイル操作ツール xdftool.py
+# XDF/HDF ファイル操作ツール xdftool.py
 
 ## 概要
 
-xdftool.py は、XDFファイル (X680x0 エミュレータや X68000Z で用いられるフロッピーディスクイメージファイル) を作成・展開するための Python スクリプトです。
+xdftool.py は、XDF/HDF ファイル (X680x0 エミュレータや X68000 Z で用いられるフロッピーディスク/SASI HDDイメージファイル) を作成・展開するための Python スクリプトです。
 
 Linux などの Python 実行環境の他に、MicroPython for X680x0 を用いることで X68k 上でも実行できます。
 
@@ -37,6 +37,11 @@ Linux などの Python 実行環境の他に、MicroPython for X680x0 を用い�
     * `/8` : 2DD (640KB)
     * `/9` : 2DD (720KB)
     * `/4` : 2HQ (1440KB)
+    * `/h10` : SASI HDD (10MB、10,441,728バイト)
+    * `/h20` : SASI HDD (20MB、20,748,288バイト)
+    * `/h40` : SASI HDD (40MB、41,496,576バイト)
+
+HDFファイルには、ディスク管理領域、`Human68k` パーティション、およびFAT16ファイルシステムを作成します。
 
 ## ライセンス
 
