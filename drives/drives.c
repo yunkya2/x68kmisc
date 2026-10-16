@@ -2,7 +2,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <x68k/dos.h>
+#include <strings.h>
+#include <x68k/dos_inline.h>
 
 struct devheader {
 	struct devheader *next;
@@ -31,7 +32,7 @@ void getdevid(void)
 	struct devid *l = devid;
 	char name[8] = "";
 	int id = 0;
-	char *dev = (char *)0x006800;
+	char *dev = *(char **)0x001c20;
 	while (memcmp(dev, "NUL     ", 8) != 0) {
 		dev += 2;
 	}
@@ -112,59 +113,67 @@ int main(int argc, char **argv)
 	}
 
 	for (int i = arg; i < argc; i++) {
-		char name[8];
-		memset(name, 0, 8);
-		strncpy(name, argv[i], 7);
-		for (int i = strlen(name); i < 7; i++)
-			name[i] = ' ';
-		int unit = 0;
-		int id = 0;
-		while (1) {
-			int namefound = false;
-			int idfound = false;
-			int unitfound = false;
-			int j;
-			for (j = 0; j < 26; j++) {
-				struct devlist *l = &devlist[j];
-				if (memcmp(name, l->name, 7) == 0) {
-					namefound = true;
-					if (l->id == id) {
-						idfound = true;
-						if (l->unit == unit) {
-							unitfound = true;
-							if (verbose)
-								printf("%c: <-> %c: %s %d %d 0x%04x\n", 'A' + drive, 'A' + j, l->name, l->id, l->unit, l->attr);
-							if (drive != j) {
-								struct devlist tmp;
-								tmp = devlist[drive];
-								devlist[drive] = devlist[j];
-								devlist[j] = tmp;
-								_dos_drvxchg(drive + 1, j + 1);
-								if (_dos_curdrv() == drive) {
-									_dos_chgdrv(j);
-									if (verbose)
-										printf("chdrv %c: -> %c:\n:", 'A' + drive, 'A' + j);
-								} else if (_dos_curdrv() == j) {
-									_dos_chgdrv(drive);
-									if (verbose)
-										printf("chdrv %c: -> %c:\n", 'A' + j, 'A' + drive);
-								}
-							}
-							drive++;
-							unit++;
-							break;
-						}
-					}
+		const char *count = strchr(argv[i], ':');
+		size_t len = count ? (size_t)(count - argv[i]) : strlen(argv[i]);
+		int remaining = 26;
+		if (len == 0 || len > 7) {
+			fprintf(stderr, "invalid driver name: %s\n", argv[i]);
+			return 1;
+		}
+		if (count) {
+			count++;
+			if (*count == '\0') {
+				fprintf(stderr, "invalid unit count: %s\n", argv[i]);
+				return 1;
+			}
+			remaining = 0;
+			for (; *count; count++) {
+				if (*count < '0' || *count > '9') {
+					fprintf(stderr, "invalid unit count: %s\n", argv[i]);
+					return 1;
+				}
+				if (remaining < 26) {
+					remaining = remaining * 10 + (*count - '0');
+					if (remaining > 26)
+						remaining = 26;
 				}
 			}
-			if (!namefound)
-				break;
-			if (!idfound)
-				break;
-			if (!unitfound) {
-				id++;
-				unit = 0;
+		}
+		char name[8];
+		memset(name, ' ', 7);
+		memcpy(name, argv[i], len);
+		name[7] = '\0';
+		while (remaining > 0 && drive < 26) {
+			int best = -1;
+			for (int j = drive; j < 26; j++) {
+				struct devlist *l = &devlist[j];
+				if (l->used && strcasecmp(name, l->name) == 0 &&
+				    (best < 0 || l->id < devlist[best].id ||
+				     (l->id == devlist[best].id && l->unit < devlist[best].unit)))
+					best = j;
 			}
+			if (best < 0)
+				break;
+			struct devlist *l = &devlist[best];
+			if (verbose)
+				printf("%c: <-> %c: %s %d %d 0x%04x\n", 'A' + drive, 'A' + best, l->name, l->id, l->unit, l->attr);
+			if (drive != best) {
+				struct devlist tmp = devlist[drive];
+				devlist[drive] = devlist[best];
+				devlist[best] = tmp;
+				_dos_drvxchg(drive + 1, best + 1);
+				if (_dos_curdrv() == drive) {
+					_dos_chgdrv(best);
+					if (verbose)
+						printf("chdrv %c: -> %c:\n", 'A' + drive, 'A' + best);
+				} else if (_dos_curdrv() == best) {
+					_dos_chgdrv(drive);
+					if (verbose)
+						printf("chdrv %c: -> %c:\n", 'A' + best, 'A' + drive);
+			}
+			}
+			drive++;
+			remaining--;
 		}
 	}
 

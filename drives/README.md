@@ -25,11 +25,14 @@ X68000 ドライブレター並び替えツール drives.x
   ```
 
 * コマンドラインオプションでデバイスドライバ名を指定すると、ドライブレターをデバイスドライバごとに機器 ID, ユニット番号順に並べ替えます。
+  * デバイスドライバ名の大文字・小文字は区別しません
+  * ドライバ名の後に `:<数>` を付けると、そのドライバから指定した数のドライブだけを先頭から並べます。省略すると従来どおり全ドライブを並べます
+  * 例えば `drives.x DISK2HD:2 XEIJHFS` は DISK2HD の先頭 2 ドライブを並べ、続けて XEIJHFS の全ドライブを並べます
   * ドライブレター変更の様子が表示されますが、`-q` オプションを指定すると何も表示せずに並べ替えを行います
   * 存在しないデバイスドライバ名を指定した場合は単に無視します
   * 例えば HFS(XEiJ)、WinDRV(XM6g)、x68kzremotedrv(X68000Z) はリモートドライブデバイスですべてドライバ名が異なりますが、CONFIG.SYS で以下のように指定すると、
     ```
-    PROGRAM = drives.x -q DISK2HD XEIJHFS ZREMOTE EMUHOST
+    PROGRAM = drives.x -q DISK2HD:2 XEIJHFS ZREMOTE EMUHOST
     ```
     * まずは DISK2HD のユニット番号 0,1 が A, B ドライブに
     * 次に、HFS(XEiJ)、WinDRV(XM6g)、x68kzremotedrv(X68000Z) のいずれかのデバイスがあれば C ドライブ以降に並びます
